@@ -1,17 +1,17 @@
 require "spec"
 require "json"
 
-def it_parses_json(string, expected_value)
-  it "parses #{string}" do
-    Json.parse(string).should eq(expected_value)
+macro it_parses_json(string, expected_value)
+  it "parses #{ {{string}} }" do
+    expect(Json.parse({{string}})).to eq({{expected_value}})
   end
 end
 
-def it_raises_on_parse_json(string)
-  it "raises on parse #{string}" do
-    expect_raises Json::ParseException do
-      Json.parse(string)
-    end
+macro it_raises_on_parse_json(string)
+  it "raises on parse #{ {{string}} }" do
+    expect {
+      Json.parse({{string}})
+    }.to raise_error Json::ParseException
   end
 end
 

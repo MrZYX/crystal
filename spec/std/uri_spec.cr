@@ -1,15 +1,14 @@
-#!/usr/bin/env bin/crystal --run
 require "spec"
 require "uri"
 
-def assert_uri(string, scheme, host, port, path, query_string)
-  it "parse #{string}" do
-    uri = URI.parse(string)
-    uri.scheme.should eq(scheme)
-    uri.host.should eq(host)
-    uri.port.should eq(port)
-    uri.path.should eq(path)
-    uri.query.should eq(query_string)
+macro assert_uri(string, scheme, host, port, path, query_string)
+  it "parse {{string.id}}" do
+    uri = URI.parse({{string}})
+    uri.scheme.should eq({{scheme}})
+    uri.host.should eq({{host}})
+    uri.port.should eq({{port}})
+    uri.path.should eq({{path}})
+    uri.query.should eq({{query_string}})
   end
 end
 

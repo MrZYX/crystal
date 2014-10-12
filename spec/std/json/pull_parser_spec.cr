@@ -3,42 +3,42 @@ require "json"
 
 class Json::PullParser
   def assert(event_kind : Symbol)
-    kind.should eq(event_kind)
+    expect(kind).to eq(event_kind)
     read_next
   end
 
   def assert(value : Nil)
-    kind.should eq(:null)
+    expect(kind).to eq(:null)
     read_next
   end
 
   def assert(value : Int)
-    kind.should eq(:int)
-    int_value.should eq(value)
+    expect(kind).to eq(:int)
+    expect(int_value).to eq(value)
     read_next
   end
 
   def assert(value : Float)
-    kind.should eq(:float)
-    float_value.should eq(value)
+    expect(kind).to eq(:float)
+    expect(float_value).to eq(value)
     read_next
   end
 
   def assert(value : Bool)
-    kind.should eq(:bool)
-    bool_value.should eq(value)
+    expect(kind).to eq(:bool)
+    expect(bool_value).to eq(value)
     read_next
   end
 
   def assert(value : String)
-    kind.should eq(:string)
-    string_value.should eq(value)
+    expect(kind).to eq(:string)
+    expect(string_value).to eq(value)
     read_next
   end
 
   def assert(value : String)
-    kind.should eq(:object_key)
-    string_value.should eq(value)
+    expect(kind).to eq(:object_key)
+    expect(string_value).to eq(value)
     read_next
     yield
   end
@@ -62,10 +62,10 @@ class Json::PullParser
   end
 
   def assert_array
-    kind.should eq(:begin_array)
+    expect(kind).to eq(:begin_array)
     read_next
     yield
-    kind.should eq(:end_array)
+    expect(kind).to eq(:end_array)
     read_next
   end
 
@@ -74,10 +74,10 @@ class Json::PullParser
   end
 
   def assert_object
-    kind.should eq(:begin_object)
+    expect(kind).to eq(:begin_object)
     read_next
     yield
-    kind.should eq(:end_object)
+    expect(kind).to eq(:end_object)
     read_next
   end
 
@@ -92,22 +92,22 @@ class Json::PullParser
   end
 end
 
-def assert_pull_parse(string)
-  it "parses #{string}" do
-    parser = Json::PullParser.new string
-    parser.assert Json.parse(string)
-    parser.kind.should eq(:EOF)
+macro assert_pull_parse(string)
+  it "parses #{ {{string}} }" do
+    parser = Json::PullParser.new {{string}}
+    parser.assert Json.parse({{string}})
+    expect(parser.kind).to eq(:EOF)
   end
 end
 
-def assert_pull_parse_error(string)
-  it "errors on #{string}" do
-    expect_raises Json::ParseException do
-      parser = Json::PullParser.new string
+macro assert_pull_parse_error(string)
+  it "errors on #{ {{string}} }" do
+    expect {
+      parser = Json::PullParser.new {{string}}
       while parser.kind != :EOF
         parser.read_next
       end
-    end
+    }.to raise_error Json::ParseException
   end
 end
 
@@ -168,32 +168,32 @@ describe "Json::PullParser" do
       it "skips #{tuple[0]}" do
         pull = Json::PullParser.new("[1, #{tuple[1]}, 2]")
         pull.read_array do
-          pull.read_int.should eq(1)
+          expect(pull.read_int).to eq(1)
           pull.skip
-          pull.read_int.should eq(2)
+          expect(pull.read_int).to eq(2)
         end
       end
     end
   end
 
   it "reads bool or null" do
-    Json::PullParser.new("null").read_bool_or_null.should be_nil
-    Json::PullParser.new("false").read_bool_or_null.should be_false
+    expect(Json::PullParser.new("null").read_bool_or_null).to be_nil
+    expect(Json::PullParser.new("false").read_bool_or_null).to be_false
   end
 
   it "reads int or null" do
-    Json::PullParser.new("null").read_int_or_null.should be_nil
-    Json::PullParser.new("1").read_int_or_null.should eq(1)
+    expect(Json::PullParser.new("null").read_int_or_null).to be_nil
+    expect(Json::PullParser.new("1").read_int_or_null).to eq(1)
   end
 
   it "reads float or null" do
-    Json::PullParser.new("null").read_float_or_null.should be_nil
-    Json::PullParser.new("1.5").read_float_or_null.should eq(1.5)
+    expect(Json::PullParser.new("null").read_float_or_null).to be_nil
+    expect(Json::PullParser.new("1.5").read_float_or_null).to eq(1.5)
   end
 
   it "reads string or null" do
-    Json::PullParser.new("null").read_string_or_null.should be_nil
-    Json::PullParser.new(%("hello")).read_string_or_null.should eq("hello")
+    expect(Json::PullParser.new("null").read_string_or_null).to be_nil
+    expect(Json::PullParser.new(%("hello")).read_string_or_null).to eq("hello")
   end
 
   it "reads array or null" do
@@ -201,7 +201,7 @@ describe "Json::PullParser" do
 
     pull = Json::PullParser.new(%([1]))
     pull.read_array_or_null do
-      pull.read_int.should eq(1)
+      expect(pull.read_int).to eq(1)
     end
   end
 
@@ -210,8 +210,8 @@ describe "Json::PullParser" do
 
     pull = Json::PullParser.new(%({"foo": 1}))
     pull.read_object_or_null do |key|
-      key.should eq("foo")
-      pull.read_int.should eq(1)
+      expect(key).to eq("foo")
+      expect(pull.read_int).to eq(1)
     end
   end
 
@@ -224,7 +224,7 @@ describe "Json::PullParser" do
         bar = pull.read_int
       end
 
-      bar.should eq(2)
+      expect(bar).to eq(2)
     end
 
     it "finds key" do
@@ -235,7 +235,7 @@ describe "Json::PullParser" do
         bar = pull.read_int
       end
 
-      bar.should eq(2)
+      expect(bar).to eq(2)
     end
 
     it "doesn't find key" do
@@ -246,7 +246,7 @@ describe "Json::PullParser" do
         bar = pull.read_int
       end
 
-      bar.should be_nil
+      expect(bar).to be_nil
     end
 
     it "finds key with bang" do
@@ -257,23 +257,22 @@ describe "Json::PullParser" do
         bar = pull.read_int
       end
 
-      bar.should eq(2)
+      expect(bar).to eq(2)
     end
 
     it "doesn't find key with bang" do
-      pull = Json::PullParser.new(%({"foo": 1, "baz": 2}))
-
-      expect_raises Exception, "json key not found: bar" do
+      expect {
+        pull = Json::PullParser.new(%({"foo": 1, "baz": 2}))
         pull.on_key!("bar") do
         end
-      end
+      }.to raise_error Exception, "json key not found: bar"
     end
 
     ["1", "[1]", %({"x": [1]})].each do |value|
       it "yields all keys when skipping #{value}" do
         pull = Json::PullParser.new(%({"foo": #{value}, "bar": 2}))
         pull.read_object do |key|
-          key.should_not eq("")
+          expect(key).to_not eq("")
           pull.skip
         end
       end

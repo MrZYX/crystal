@@ -1,4 +1,3 @@
-#!/usr/bin/env crystal --run
 require "../../spec_helper"
 
 struct Number
@@ -107,10 +106,10 @@ class Crystal::ASTNode
   end
 end
 
-def it_parses(string, expected_node)
-  it "parses #{string}" do
-    node = Parser.parse(string)
-    node.should eq(Expressions.from expected_node)
+macro it_parses(string, expected_node)
+  it "parses #{ {{string}} }" do
+    node = Parser.parse({{string}})
+    expect(node).to eq(Expressions.from {{expected_node}})
   end
 end
 

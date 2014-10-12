@@ -1,4 +1,3 @@
-#!/usr/bin/env bin/crystal --run
 require "spec"
 
 describe "Int" do
@@ -124,7 +123,7 @@ describe "Int" do
     it "steps through limit" do
       passed = false
       1.step(1) { |x| passed = true }
-      fail "expected step to pass through 1" unless passed
+      expect(passed).to be_true
     end
   end
 

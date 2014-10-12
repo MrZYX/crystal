@@ -1,10 +1,9 @@
-#!/usr/bin/env bin/crystal --run
 require "spec"
 require "base64"
 require "crypto/md5"
 
 describe "Base64" do
-  it "simple test" do
+  context "simple test" do
     eqs = {"" => "", "a" => "YQ==\n", "ab" => "YWI=\n", "abc" => "YWJj\n",
            "abcd" => "YWJjZA==\n", "abcde"  => "YWJjZGU=\n", "abcdef" => "YWJjZGVm\n",
            "abcdefg" => "YWJjZGVmZw==\n"}

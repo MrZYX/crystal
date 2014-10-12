@@ -1,44 +1,43 @@
-#!/usr/bin/env bin/crystal --run
 require "spec"
 
 describe "Spec matchers" do
   describe "should be_truthy" do
     it "passes for true" do
-      true.should be_truthy
+      expect(true).to be_truthy
     end
 
     it "passes for some non-nil, non-false value" do
-      42.should be_truthy
+      expect(42).to be_truthy
     end
   end
 
   describe "should_not be_truthy" do
     it "passes for false" do
-      false.should_not be_truthy
+      expect(false).to_not be_truthy
     end
 
     it "passes for nil" do
-      nil.should_not be_truthy
+      expect(nil).to_not be_truthy
     end
   end
 
   describe "should be_falsey" do
     it "passes for false" do
-      false.should be_falsey
+      expect(false).to be_falsey
     end
 
     it "passes for nil" do
-      nil.should be_falsey
+      expect(nil).to be_falsey
     end
   end
 
   describe "should_not be_falsey" do
     it "passses for true" do
-      true.should_not be_falsey
+      expect(true).to_not be_falsey
     end
 
     it "passes for some non-nil, non-false value" do
-      42.should_not be_falsey
+      expect(42).to_not be_falsey
     end
   end
 end

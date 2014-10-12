@@ -1,16 +1,15 @@
-#!/usr/bin/env crystal --run
 require "../../spec_helper"
 
-def it_lexes(string, type)
-  it "lexes #{string.inspect}" do
+def it_lexes(c, string, type)
+  c.it "lexes #{string.inspect}" do
     lexer = Lexer.new string
     token = lexer.next_token
     token.type.should eq(type)
   end
 end
 
-def it_lexes(string, type, value)
-  it "lexes #{string.inspect}" do
+def it_lexes(c, string, type, value)
+  c.it "lexes #{string.inspect}" do
     lexer = Lexer.new string
     token = lexer.next_token
     token.type.should eq(type)
@@ -18,8 +17,8 @@ def it_lexes(string, type, value)
   end
 end
 
-def it_lexes(string, type, value, number_kind)
-  it "lexes #{string.inspect}" do
+def it_lexes(c, string, type, value, number_kind)
+  c.it "lexes #{string.inspect}" do
     lexer = Lexer.new string
     token = lexer.next_token
     token.type.should eq(type)
@@ -28,54 +27,54 @@ def it_lexes(string, type, value, number_kind)
   end
 end
 
-def it_lexes_many(values, type)
+def it_lexes_many(c, values, type)
   values.each do |value|
-    it_lexes value, type, value
+    it_lexes c, value, type, value
   end
 end
 
-def it_lexes_keywords(keywords)
+def it_lexes_keywords(c, keywords)
   keywords.each do |keyword|
-    it_lexes keyword.to_s, :IDENT, keyword
+    it_lexes c, keyword.to_s, :IDENT, keyword
   end
 end
 
-def it_lexes_idents(idents)
+def it_lexes_idents(c, idents)
   idents.each do |ident|
-    it_lexes ident, :IDENT, ident
+    it_lexes c, ident, :IDENT, ident
   end
 end
 
-def it_lexes_i32(values)
-  values.each { |value| it_lexes_number :i32, value }
+def it_lexes_i32(c, values)
+  values.each { |value| it_lexes_number c, :i32, value }
 end
 
-def it_lexes_i64(values)
-  values.each { |value| it_lexes_number :i64, value }
+def it_lexes_i64(c, values)
+  values.each { |value| it_lexes_number c, :i64, value }
 end
 
-def it_lexes_u64(values)
-  values.each { |value| it_lexes_number :u64, value }
+def it_lexes_u64(c, values)
+  values.each { |value| it_lexes_number c, :u64, value }
 end
 
-def it_lexes_f32(values)
-  values.each { |value| it_lexes_number :f32, value }
+def it_lexes_f32(c, values)
+  values.each { |value| it_lexes_number c, :f32, value }
 end
 
-def it_lexes_f64(values)
-  values.each { |value| it_lexes_number :f64, value }
+def it_lexes_f64(c, values)
+  values.each { |value| it_lexes_number c, :f64, value }
 end
 
-def it_lexes_number(number_kind, value : Array)
-  it_lexes value[0], :NUMBER, value[1], number_kind
+def it_lexes_number(c, number_kind, value : Array)
+  it_lexes c, value[0], :NUMBER, value[1], number_kind
 end
 
-def it_lexes_number(number_kind, value : String)
-  it_lexes value, :NUMBER, value, number_kind
+def it_lexes_number(c, number_kind, value : String)
+  it_lexes c, value, :NUMBER, value, number_kind
 end
 
-def it_lexes_char(string, value)
-  it "lexes #{string}" do
+def it_lexes_char(c, string, value)
+  c.it "lexes #{string}" do
     lexer = Lexer.new string
     token = lexer.next_token
     token.type.should eq(:CHAR)
@@ -83,132 +82,132 @@ def it_lexes_char(string, value)
   end
 end
 
-def it_lexes_operators(ops)
+def it_lexes_operators(c, ops)
   ops.each do |op|
-    it_lexes op.to_s, op
+    it_lexes c, op.to_s, op
   end
 end
 
-def it_lexes_const(value)
-  it_lexes value, :CONST, value
+def it_lexes_const(c, value)
+  it_lexes c, value, :CONST, value
 end
 
-def it_lexes_instance_var(value)
-  it_lexes value, :INSTANCE_VAR, value
+def it_lexes_instance_var(c, value)
+  it_lexes c, value, :INSTANCE_VAR, value
 end
 
-def it_lexes_class_var(value)
-  it_lexes value, :CLASS_VAR, value
+def it_lexes_class_var(c, value)
+  it_lexes c, value, :CLASS_VAR, value
 end
 
-def it_lexes_globals(globals)
-  it_lexes_many globals, :GLOBAL
+def it_lexes_globals(c, globals)
+  it_lexes_many c, globals, :GLOBAL
 end
 
-def it_lexes_symbols(symbols)
+def it_lexes_symbols(c, symbols)
   symbols.each do |symbol|
     value = symbol[1, symbol.length - 1]
     value = value[1, value.length - 2] if value.starts_with?("\"")
-    it_lexes symbol, :SYMBOL, value
+    it_lexes c, symbol, :SYMBOL, value
   end
 end
 
-def it_lexes_global_match_data_index(globals)
+def it_lexes_global_match_data_index(c, globals)
   globals.each do |global|
-    it_lexes global, :GLOBAL_MATCH_DATA_INDEX, global[1, global.length - 1].to_i
+    it_lexes c, global, :GLOBAL_MATCH_DATA_INDEX, global[1, global.length - 1].to_i
   end
 end
 
-describe "Lexer" do
-  it_lexes "", :EOF
-  it_lexes " ", :SPACE
-  it_lexes "\t", :SPACE
-  it_lexes "\n", :NEWLINE
-  it_lexes "\n\n\n", :NEWLINE
-  it_lexes "_", :UNDERSCORE
-  it_lexes_keywords [:def, :if, :else, :elsif, :end, :true, :false, :class, :module, :include, :extend, :while, :until, :nil, :do, :yield, :return, :unless, :next, :break, :begin, :lib, :fun, :type, :struct, :union, :enum, :macro, :ptr, :out, :require, :case, :when, :then, :of, :abstract, :rescue, :ensure, :is_a?, :alias, :pointerof, :sizeof, :instance_sizeof, :ifdef, :as, :typeof, :for, :in, :undef, :with, :self, :super, :private, :protected]
-  it_lexes_idents ["ident", "something", "with_underscores", "with_1", "foo?", "bar!", "fooBar", "❨╯°□°❩╯︵┻━┻"]
-  it_lexes_idents ["def?", "if?", "else?", "elsif?", "end?", "true?", "false?", "class?", "while?", "nil?", "do?", "yield?", "return?", "unless?", "next?", "break?", "begin?"]
-  it_lexes_idents ["def!", "if!", "else!", "elsif!", "end!", "true!", "false!", "class!", "while!", "nil!", "do!", "yield!", "return!", "unless!", "next!", "break!", "begin!"]
-  it_lexes_i32 ["1", ["0i32", "0"], ["1hello", "1"], "+1", "-1", "1234", "+1234", "-1234", ["1.foo", "1"], ["1_000", "1000"], ["100_000", "100000"]]
-  it_lexes_i64 [["1i64", "1"], ["1_i64", "1"], ["1i64hello", "1"], ["+1_i64", "+1"], ["-1_i64", "-1"]]
-  it_lexes_f32 [["0f32", "0"], ["0_f32", "0"], ["1.0f32", "1.0"], ["1.0f32hello", "1.0"], ["+1.0f32", "+1.0"], ["-1.0f32", "-1.0"], ["-0.0f32", "-0.0"], ["1_234.567_890_f32", "1234.567890"]]
-  it_lexes_f64 ["1.0", ["1.0hello", "1.0"], "+1.0", "-1.0", ["1_234.567_890", "1234.567890"]]
-  it_lexes_f32 [["1e+23_f32", "1e+23"], ["1.2e+23_f32", "1.2e+23"]]
-  it_lexes_f64 ["1e23", "1e-23", "1e+23", "1.2e+23", ["1e23f64", "1e23"], ["1.2e+23_f64", "1.2e+23"]]
+describe "Lexer" do |c|
+  it_lexes c, "", :EOF
+  it_lexes c, " ", :SPACE
+  it_lexes c, "\t", :SPACE
+  it_lexes c, "\n", :NEWLINE
+  it_lexes c, "\n\n\n", :NEWLINE
+  it_lexes c, "_", :UNDERSCORE
+  it_lexes_keywords c, [:def, :if, :else, :elsif, :end, :true, :false, :class, :module, :include, :extend, :while, :until, :nil, :do, :yield, :return, :unless, :next, :break, :begin, :lib, :fun, :type, :struct, :union, :enum, :macro, :ptr, :out, :require, :case, :when, :then, :of, :abstract, :rescue, :ensure, :is_a?, :alias, :pointerof, :sizeof, :instance_sizeof, :ifdef, :as, :typeof, :for, :in, :undef, :with, :self, :super, :private, :protected]
+  it_lexes_idents c, ["ident", "something", "with_underscores", "with_1", "foo?", "bar!", "fooBar", "❨╯°□°❩╯︵┻━┻"]
+  it_lexes_idents c, ["def?", "if?", "else?", "elsif?", "end?", "true?", "false?", "class?", "while?", "nil?", "do?", "yield?", "return?", "unless?", "next?", "break?", "begin?"]
+  it_lexes_idents c, ["def!", "if!", "else!", "elsif!", "end!", "true!", "false!", "class!", "while!", "nil!", "do!", "yield!", "return!", "unless!", "next!", "break!", "begin!"]
+  it_lexes_i32 c, ["1", ["0i32", "0"], ["1hello", "1"], "+1", "-1", "1234", "+1234", "-1234", ["1.foo", "1"], ["1_000", "1000"], ["100_000", "100000"]]
+  it_lexes_i64 c, [["1i64", "1"], ["1_i64", "1"], ["1i64hello", "1"], ["+1_i64", "+1"], ["-1_i64", "-1"]]
+  it_lexes_f32 c, [["0f32", "0"], ["0_f32", "0"], ["1.0f32", "1.0"], ["1.0f32hello", "1.0"], ["+1.0f32", "+1.0"], ["-1.0f32", "-1.0"], ["-0.0f32", "-0.0"], ["1_234.567_890_f32", "1234.567890"]]
+  it_lexes_f64 c, ["1.0", ["1.0hello", "1.0"], "+1.0", "-1.0", ["1_234.567_890", "1234.567890"]]
+  it_lexes_f32 c, [["1e+23_f32", "1e+23"], ["1.2e+23_f32", "1.2e+23"]]
+  it_lexes_f64 c, ["1e23", "1e-23", "1e+23", "1.2e+23", ["1e23f64", "1e23"], ["1.2e+23_f64", "1.2e+23"]]
 
-  it_lexes_number :i8, ["1i8", "1"]
-  it_lexes_number :i8, ["1_i8", "1"]
+  it_lexes_number c, :i8, ["1i8", "1"]
+  it_lexes_number c, :i8, ["1_i8", "1"]
 
-  it_lexes_number :i16, ["1i16", "1"]
-  it_lexes_number :i16, ["1_i16", "1"]
+  it_lexes_number c, :i16, ["1i16", "1"]
+  it_lexes_number c, :i16, ["1_i16", "1"]
 
-  it_lexes_number :i32, ["1i32", "1"]
-  it_lexes_number :i32, ["1_i32", "1"]
+  it_lexes_number c, :i32, ["1i32", "1"]
+  it_lexes_number c, :i32, ["1_i32", "1"]
 
-  it_lexes_number :i64, ["1i64", "1"]
-  it_lexes_number :i64, ["1_i64", "1"]
+  it_lexes_number c, :i64, ["1i64", "1"]
+  it_lexes_number c, :i64, ["1_i64", "1"]
 
-  it_lexes_number :u8, ["1u8", "1"]
-  it_lexes_number :u8, ["1_u8", "1"]
+  it_lexes_number c, :u8, ["1u8", "1"]
+  it_lexes_number c, :u8, ["1_u8", "1"]
 
-  it_lexes_number :u16, ["1u16", "1"]
-  it_lexes_number :u16, ["1_u16", "1"]
+  it_lexes_number c, :u16, ["1u16", "1"]
+  it_lexes_number c, :u16, ["1_u16", "1"]
 
-  it_lexes_number :u32, ["1u32", "1"]
-  it_lexes_number :u32, ["1_u32", "1"]
+  it_lexes_number c, :u32, ["1u32", "1"]
+  it_lexes_number c, :u32, ["1_u32", "1"]
 
-  it_lexes_number :u64, ["1u64", "1"]
-  it_lexes_number :u64, ["1_u64", "1"]
+  it_lexes_number c, :u64, ["1u64", "1"]
+  it_lexes_number c, :u64, ["1_u64", "1"]
 
-  it_lexes_number :f32, ["1f32", "1"]
-  it_lexes_number :f32, ["1.0f32", "1.0"]
+  it_lexes_number c, :f32, ["1f32", "1"]
+  it_lexes_number c, :f32, ["1.0f32", "1.0"]
 
-  it_lexes_number :f64, ["1f64", "1"]
-  it_lexes_number :f64, ["1.0f64", "1.0"]
+  it_lexes_number c, :f64, ["1f64", "1"]
+  it_lexes_number c, :f64, ["1.0f64", "1.0"]
 
-  it_lexes_number :i32, ["0b1010", "10"]
-  it_lexes_number :i32, ["+0b1010", "10"]
-  it_lexes_number :i32, ["-0b1010", "-10"]
+  it_lexes_number c, :i32, ["0b1010", "10"]
+  it_lexes_number c, :i32, ["+0b1010", "10"]
+  it_lexes_number c, :i32, ["-0b1010", "-10"]
 
-  it_lexes_number :i32, ["0xFFFF", "65535"]
-  it_lexes_number :i32, ["0xabcdef", "11259375"]
-  it_lexes_number :i32, ["+0xFFFF", "65535"]
-  it_lexes_number :i32, ["-0xFFFF", "-65535"]
+  it_lexes_number c, :i32, ["0xFFFF", "65535"]
+  it_lexes_number c, :i32, ["0xabcdef", "11259375"]
+  it_lexes_number c, :i32, ["+0xFFFF", "65535"]
+  it_lexes_number c, :i32, ["-0xFFFF", "-65535"]
 
-  it_lexes_number :u64, ["0xFFFF_u64", "65535"]
+  it_lexes_number c, :u64, ["0xFFFF_u64", "65535"]
 
-  it_lexes_i32 [["0123", "83"], ["-0123", "-83"], ["+0123", "83"]]
-  it_lexes_f64 [["0.5", "0.5"], ["+0.5", "+0.5"], ["-0.5", "-0.5"]]
-  it_lexes_i64 [["0123_i64", "83"], ["0x1_i64", "1"], ["0b1_i64", "1"]]
+  it_lexes_i32 c, [["0123", "83"], ["-0123", "-83"], ["+0123", "83"]]
+  it_lexes_f64 c, [["0.5", "0.5"], ["+0.5", "+0.5"], ["-0.5", "-0.5"]]
+  it_lexes_i64 c, [["0123_i64", "83"], ["0x1_i64", "1"], ["0b1_i64", "1"]]
 
-  it_lexes_i64 ["2147483648", "-2147483649", "-9223372036854775808"]
-  it_lexes_u64 ["9223372036854775808", "-9223372036854775809"]
+  it_lexes_i64 c, ["2147483648", "-2147483649", "-9223372036854775808"]
+  it_lexes_u64 c, ["9223372036854775808", "-9223372036854775809"]
 
-  it_lexes_char "'a'", 'a'
-  it_lexes_char "'\\n'", '\n'
-  it_lexes_char "'\\t'", '\t'
-  it_lexes_char "'\\v'", '\v'
-  it_lexes_char "'\\f'", '\f'
-  it_lexes_char "'\\r'", '\r'
-  it_lexes_char "'\\0'", '\0'
-  it_lexes_char "'\\0'", '\0'
-  it_lexes_char "'\\''", '\''
-  it_lexes_char "'\\\\'", '\\'
-  it_lexes_char "'\\1'", '\1'
-  it_lexes_operators [:"=", :"<", :"<=", :">", :">=", :"+", :"-", :"*", :"/", :"(", :")", :"==", :"!=", :"=~", :"!", :",", :".", :"..", :"...", :"&&", :"||", :"|", :"{", :"}", :"?", :":", :"+=", :"-=", :"*=", :"/=", :"%=", :"&=", :"|=", :"^=", :"**=", :"<<", :">>", :"%", :"&", :"|", :"^", :"**", :"<<=", :">>=", :"~", :"[]", :"[]=", :"[", :"]", :"::", :"<=>", :"=>", :"||=", :"&&=", :"===", :";", :"->", :"[]?", :"@:", :"{%", :"{{", :"%}", :"@["]
-  it_lexes "!@foo", :"!"
-  it_lexes "+@foo", :"+"
-  it_lexes "-@foo", :"-"
-  it_lexes_const "Foo"
-  it_lexes_instance_var "@foo"
-  it_lexes_class_var "@@foo"
-  it_lexes_globals ["$foo", "$FOO", "$_foo", "$foo123"]
-  it_lexes_symbols [":foo", ":foo!", ":foo?", ":\"foo\"", ":かたな"]
-  it_lexes_global_match_data_index ["$1", "$10"]
+  it_lexes_char c, "'a'", 'a'
+  it_lexes_char c, "'\\n'", '\n'
+  it_lexes_char c, "'\\t'", '\t'
+  it_lexes_char c, "'\\v'", '\v'
+  it_lexes_char c, "'\\f'", '\f'
+  it_lexes_char c, "'\\r'", '\r'
+  it_lexes_char c, "'\\0'", '\0'
+  it_lexes_char c, "'\\0'", '\0'
+  it_lexes_char c, "'\\''", '\''
+  it_lexes_char c, "'\\\\'", '\\'
+  it_lexes_char c, "'\\1'", '\1'
+  it_lexes_operators c, [:"=", :"<", :"<=", :">", :">=", :"+", :"-", :"*", :"/", :"(", :")", :"==", :"!=", :"=~", :"!", :",", :".", :"..", :"...", :"&&", :"||", :"|", :"{", :"}", :"?", :":", :"+=", :"-=", :"*=", :"/=", :"%=", :"&=", :"|=", :"^=", :"**=", :"<<", :">>", :"%", :"&", :"|", :"^", :"**", :"<<=", :">>=", :"~", :"[]", :"[]=", :"[", :"]", :"::", :"<=>", :"=>", :"||=", :"&&=", :"===", :";", :"->", :"[]?", :"@:", :"{%", :"{{", :"%}", :"@["]
+  it_lexes c, "!@foo", :"!"
+  it_lexes c, "+@foo", :"+"
+  it_lexes c, "-@foo", :"-"
+  it_lexes_const c, "Foo"
+  it_lexes_instance_var c, "@foo"
+  it_lexes_class_var c, "@@foo"
+  it_lexes_globals c, ["$foo", "$FOO", "$_foo", "$foo123"]
+  it_lexes_symbols c, [":foo", ":foo!", ":foo?", ":\"foo\"", ":かたな"]
+  it_lexes_global_match_data_index c, ["$1", "$10"]
 
-  it_lexes "$~", :"$~"
-  it_lexes "$?", :"$?"
+  it_lexes c, "$~", :"$~"
+  it_lexes c, "$?", :"$?"
 
   assert_syntax_error "128_i8", "128 doesn't fit in an Int8"
   assert_syntax_error "-129_i8", "-129 doesn't fit in an Int8"

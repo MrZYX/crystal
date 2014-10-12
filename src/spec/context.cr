@@ -1,117 +1,134 @@
 module Spec
-  abstract class Context
-  end
+  class Context
+    getter! description
 
-  class RootContext < Context
-    def initialize
-      @results = {
-        success: [] of Result,
-        fail: [] of Result,
-        error: [] of Result,
-        pending: [] of Result,
-      }
+    def initialize(@parent, @description=nil)
+      @child_contexts = [] of Context
+      @examples =  [] of Example
+      @before_each = [] of Setup
+      @before_all = [] of Setup
+      @after_each = [] of Teardown
+      @after_all = [] of Teardown
+      with self yield self
     end
 
-    def parent
-      nil
+    def <<(context : Context)
+      @child_contexts << context
     end
 
-    def succeeded
-      @results[:fail].empty? && @results[:error].empty?
+    def <<(example : Example)
+      @examples << example
     end
 
-    def self.report(kind, full_description, ex = nil)
-      @@contexts_stack.last.report(kind, full_description, ex)
-    end
-
-    def report(kind, full_description, ex = nil)
-      Spec.formatter.report(kind, full_description, ex)
-      @results[kind] << Result.new(kind, full_description, ex)
-    end
-
-    def self.print_results(elapsed_time)
-      @@instance.print_results(elapsed_time)
-    end
-
-    def self.succeeded
-      @@instance.succeeded
-    end
-
-    def print_results(elapsed_time)
-      Spec.formatter.finish
-
-      pendings = @results[:pending]
-      unless pendings.empty?
-        puts
-        puts "Pending:"
-        pendings.each do |pending|
-          puts Spec.color("  #{pending.description}", :pending)
-        end
+    def <<(setup : Setup)
+      case setup.type
+      when :each
+        @before_each << setup
+      when :all
+        @before_all << setup
+      else
+        raise ArgumentError.new("#{setup.type} is not a valid callback type")
       end
+    end
 
-      failures = @results[:fail]
-      errors = @results[:error]
-
-      unless failures.empty? && errors.empty?
-        puts
-        puts "Failures:"
-        (failures + errors).each_with_index do |fail, i|
-          if ex = fail.exception
-            puts
-            puts "  #{i + 1}) #{fail.description}"
-            puts
-
-            ex.to_s.split("\n").each do |line|
-              print "       "
-              puts Spec.color(line, :error)
-            end
-            unless ex.is_a?(AssertionFailed)
-              ex.backtrace.each do |trace|
-                print "       "
-                puts Spec.color(trace, :error)
-              end
-            end
-          end
-        end
+    def <<(setup : Teardown)
+      case setup.type
+      when :each
+        @after_each << setup
+      when :all
+        @after_all << setup
+      else
+        raise ArgumentError.new("#{setup.type} is not a valid callback type")
       end
-
-      puts
-
-      success = @results[:success]
-      total = pendings.length + failures.length + errors.length + success.length
-
-      final_status = case
-                     when (failures.length + errors.length) > 0 then :fail
-                     when pendings.length > 0                   then :pending
-                     else                                            :success
-                     end
-
-      puts "Finished in #{elapsed_time} seconds"
-      puts Spec.color("#{total} examples, #{failures.length} failures, #{errors.length} errors, #{pendings.length} pending", final_status)
     end
 
-    @@instance = RootContext.new
-    @@contexts_stack = [@@instance] of Context
-
-    def self.describe(description)
-      describe = Spec::NestedContext.new(description, @@contexts_stack.last)
-      @@contexts_stack.push describe
-      Spec.formatter.push describe
-      yield describe
-      Spec.formatter.pop
-      @@contexts_stack.pop
-    end
-  end
-
-  class NestedContext < Context
-    getter parent
-    getter description
-
-    def initialize(@description, @parent)
+    def randomize
+      @child_contexts.shuffle!
+      @child_contexts.each(&.randomize)
+      @examples.shuffle!
     end
 
-    def report(kind, description, ex = nil)
-      @parent.report(kind, "#{@description} #{description}", ex)
+    protected def run_before_each
+      parent = @parent
+      parent.run_before_each if parent
+      @before_each.each(&.run)
+    end
+
+    protected def run_after_each
+      parent = @parent
+      parent.run_after_each if parent
+      @after_each.each(&.run)
+    end
+
+    def nesting
+      parent = @parent
+      return [] of Context unless parent
+      nesting = parent.nesting+[self]
+      nesting
+    end
+
+    def run
+      return if Spec.aborted?
+      @before_all.each(&.run)
+      @child_contexts.each(&.run)
+      @examples.each do |example|
+        return if Spec.aborted?
+        run_before_each
+        example.run
+        run_after_each
+        Spec.config.formatter.record_result(nesting, example)
+      end
+      @after_all.each(&.run)
+    end
+
+    def succeeded?
+      @child_contexts.all?(&.succeeded?) && @examples.all?(&.succeeded?)
+    end
+
+    def examples
+      # @child_contexts.flat_map(&.examples) + @examples # Can't infer block type :(
+      examples = [] of Example
+      @child_contexts.each do |context|
+        examples.concat(context.examples)
+      end
+      examples.concat(@examples)
+      examples
+    end
+
+    def describe(description : String)
+      self << Context.new(self, description) do |c|
+        with c yield c
+      end
+    end
+
+    def describe(description)
+      describe(description.to_s) do |c|
+        with c yield c
+      end
+    end
+
+    def context(description)
+      describe(description) do |c|
+        with c yield c
+      end
+    end
+
+    def it(description, &block)
+      self << Example.new(description, block)
+    end
+
+    def pending(description, &block)
+      self << PendingExample.new(description, block)
+    end
+
+    # Untested and probably not useful (no instance variable sharing)
+
+    def before(type=:each, &block)
+      self << Setup.new(type, block)
+    end
+
+    def after(type=:each, &block)
+      self << Teardown.new(type, block)
     end
   end
 end

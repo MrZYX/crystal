@@ -1,65 +1,65 @@
 require "spec"
 require "json"
 
-def it_lexes_json(string, expected_type)
-  it "lexes #{string} from string" do
-    lexer = Json::Lexer.new string
+macro it_lexes_json(string, expected_type)
+  it "lexes #{ {{string}} } from string" do
+    lexer = Json::Lexer.new {{string}}
     token = lexer.next_token
-    token.type.should eq(expected_type)
+    expect(token.type).to eq({{expected_type}})
   end
 
-  it "lexes #{string} from IO" do
-    lexer = Json::Lexer.new StringIO.new(string)
+  it "lexes #{ {{string}} } from IO" do
+    lexer = Json::Lexer.new StringIO.new({{string}})
     token = lexer.next_token
-    token.type.should eq(expected_type)
-  end
-end
-
-def it_lexes_json_string(string, string_value)
-  it "lexes #{string} from String" do
-    lexer = Json::Lexer.new string
-    token = lexer.next_token
-    token.type.should eq(:STRING)
-    token.string_value.should eq(string_value)
-  end
-
-  it "lexes #{string} from IO" do
-    lexer = Json::Lexer.new StringIO.new(string)
-    token = lexer.next_token
-    token.type.should eq(:STRING)
-    token.string_value.should eq(string_value)
+    expect(token.type).to eq({{expected_type}})
   end
 end
 
-def it_lexes_json_int(string, int_value)
-  it "lexes #{string} from String" do
-    lexer = Json::Lexer.new string
+macro it_lexes_json_string(string, string_value)
+  it "lexes #{ {{string}} } from String" do
+    lexer = Json::Lexer.new {{string}}
     token = lexer.next_token
-    token.type.should eq(:INT)
-    token.int_value.should eq(int_value)
+    expect(token.type).to eq(:STRING)
+    expect(token.string_value).to eq({{string_value}})
   end
 
-  it "lexes #{string} from IO" do
-    lexer = Json::Lexer.new StringIO.new(string)
+  it "lexes #{ {{string}} } from IO" do
+    lexer = Json::Lexer.new StringIO.new({{string}})
     token = lexer.next_token
-    token.type.should eq(:INT)
-    token.int_value.should eq(int_value)
+    expect(token.type).to eq(:STRING)
+    expect(token.string_value).to eq({{string_value}})
   end
 end
 
-def it_lexes_json_float(string, float_value)
-  it "lexes #{string} from String" do
-    lexer = Json::Lexer.new string
+macro it_lexes_json_int(string, int_value)
+  it "lexes #{ {{string}} } from String" do
+    lexer = Json::Lexer.new {{string}}
+    token = lexer.next_token
+    expect(token.type).to eq(:INT)
+    expect(token.int_value).to eq({{int_value}})
+  end
+
+  it "lexes #{ {{string}} } from IO" do
+    lexer = Json::Lexer.new StringIO.new({{string}})
+    token = lexer.next_token
+    expect(token.type).to eq(:INT)
+    expect(token.int_value).to eq({{int_value}})
+  end
+end
+
+macro it_lexes_json_float(string, float_value)
+  it "lexes #{ {{string}} } from String" do
+    lexer = Json::Lexer.new {{string}}
+    token = lexer.next_token
+    expect(token.type).to eq(:FLOAT)
+    expect(token.float_value).to eq({{float_value}})
+  end
+
+  it "lexes #{ {{string}} } from IO" do
+    lexer = Json::Lexer.new StringIO.new({{string}})
     token = lexer.next_token
     token.type.should eq(:FLOAT)
-    token.float_value.should eq(float_value)
-  end
-
-  it "lexes #{string} from IO" do
-    lexer = Json::Lexer.new StringIO.new(string)
-    token = lexer.next_token
-    token.type.should eq(:FLOAT)
-    token.float_value.should eq(float_value)
+    expect(token.float_value).to eq({{float_value}})
   end
 end
 

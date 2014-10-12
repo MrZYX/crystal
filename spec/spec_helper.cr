@@ -72,31 +72,31 @@ def assert_after_type_inference(before, after)
   result.node.to_s.strip.should eq(after.strip)
 end
 
-def assert_syntax_error(str)
-  it "says syntax error on #{str.inspect}" do
-    expect_raises Crystal::SyntaxException do
-      parse str
-    end
+macro assert_syntax_error(str)
+  it "says syntax error on #{ {{str}}.inspect }" do
+    expect {
+      parse {{str}}
+    }.to raise_error Crystal::SyntaxException
   end
 end
 
-def assert_syntax_error(str, message)
-  it "says syntax error on #{str.inspect}" do
-    expect_raises Crystal::SyntaxException, message do
-      parse str
-    end
+macro assert_syntax_error(str, message)
+  it "says syntax error on #{ {{str}}.inspect }" do
+    expect {
+      parse {{str}}
+    }.to raise_error Crystal::SyntaxException, {{message}}
   end
 end
 
-def assert_syntax_error(str, message, line, column)
-  it "says syntax error on #{str.inspect}" do
+macro assert_syntax_error(str, message, line, column)
+  it "says syntax error on #{ {{str}}.inspect }" do
     begin
-      Parser.parse(str)
+      Parser.parse({{str}})
       fail "expected SyntaxException to be raised"
     rescue ex : SyntaxException
-      ex.message.not_nil!.includes?(message).should be_true
-      ex.line_number.should eq(line)
-      ex.column_number.should eq(column)
+      expect(ex.message.not_nil!.includes?({{message}})).to be_true
+      expect(ex.line_number).to eq({{line}})
+      expect(ex.column_number).to eq({{column}})
     end
   end
 end
