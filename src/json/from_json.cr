@@ -1,10 +1,10 @@
-def Object.from_json(string_or_io)
-  parser = JSON::PullParser.new(string_or_io)
+def Object.from_json(input)
+  parser = JSON.pull_parser_for(input)
   new parser
 end
 
-def Array.from_json(string_or_io)
-  parser = JSON::PullParser.new(string_or_io)
+def Array.from_json(input)
+  parser = JSON.pull_parser_for(input)
   new(parser) do |element|
     yield element
   end

@@ -13,6 +13,18 @@ module JSON
   def self.parse(string_or_io)
     Parser.new(string_or_io).parse
   end
+
+  def self.pull_parser_for(input : Type|IO)
+    case input
+    when String, IO
+      JSON::SerializedPullParser.new(input)
+    when Type
+      JSON::UnionPullParser.new(input)
+    else
+      # Should never be reached
+      raise ArgumentError.new "Can't determine parser for #{input.inspect}"
+    end
+  end
 end
 
 require "./*"
