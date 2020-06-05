@@ -1,0 +1,49 @@
+name: AArch64 CI
+
+on: [push, pull_request]
+
+jobs:
+  cross-compile-musl:
+    runs-on: ubuntu-latest
+    container: crystallang/crystal:0.34.0-build
+    steps:
+      - name: Download Crystal source
+        uses: actions/checkout@v2
+      - name: Build Crystal head for Global ISel patch (remove step after 0.35.0)
+        run: make
+      - name: Cross-compile Crystal
+        run: |
+          touch src/compiler/crystal.cr
+          make crystal FLAGS="--cross-compile --target aarch64-linux-musl"
+          mv .build/crystal.o crystal.o
+      - name: Upload Crystal object file
+        uses: actions/upload-artifact@v1
+        with:
+          name: crystal-object-aarch64-musl
+          path: crystal.o
+  test-alpine:
+    needs: cross-compile-musl
+    runs-on: ubuntu-latest
+    steps:
+      # - name: Update QEMU
+      #   run: sudo apt update -y && sudo apt install -y qemu-system-arm qemu-user-static
+      - name: Register qemu-user-static
+        run: |
+          docker run --rm --privileged multiarch/qemu-user-static:register --reset
+      - name: Download Crystal source
+        uses: actions/checkout@v2
+      - name: Download Crystal object file
+        uses: actions/download-artifact@v1
+        with:
+          name: crystal-object-aarch64-musl
+          path: ./
+      - name: Build & test
+        uses: docker://multiarch/alpine:aarch64-v3.12
+        with:
+          args: |
+            /bin/ash .github/workflows/aarch64-alpine-build.sh
+      - name: Upload Crystal executable
+        uses: actions/upload-artifact@v1
+        with:
+          name: crystal-aarch64-alpine
+          path: .build/crystal
