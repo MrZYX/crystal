@@ -1,0 +1,10 @@
+---
+kind: pipeline
+name: AArch64 CI
+platform:
+  arch: aarch64
+steps:
+  - name: Build & test
+    image: alpine:3.12
+    commands:
+      - /bin/ash .github/workflows/aarch64-alpine-build.sh
