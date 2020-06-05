@@ -1,0 +1,44 @@
+name: Prepare and trigger AArch64 build
+
+on: [push]
+
+jobs:
+  cross-compile-musl:
+    runs-on: ubuntu-latest
+    container: crystallang/crystal:0.34.0-build
+    steps:
+      - name: Download Crystal source
+        uses: actions/checkout@v2
+      - name: Build Crystal head for Global ISel patch (remove step after 0.35.0)
+        run: make
+      - name: Cross-compile Crystal
+        run: |
+          touch src/compiler/crystal.cr
+          make crystal FLAGS="--cross-compile --target aarch64-linux-musl"
+          mv .build/crystal.o crystal.o
+      - name: Upload Crystal object file
+        uses: actions/upload-artifact@v1
+        with:
+          name: crystal-object-aarch64-musl
+          path: crystal.o
+      - name: Trigger Build on Travis CI
+        run: |
+          set -x
+          #  We got no curl here and installing it or restructing the workflow just for this seems exhausting, so....
+          crystal eval \
+            'require "http/client"; require "json"; pp HTTP::Client.post(' \
+            '"https://api.travis-ci.org/repo/#{URI.encode_www_form(ENV["GITHUB_REPOSITORY"])}/requests", ' \
+            'HTTP::Headers { ' \
+              '"Content-Type" => "application/json",' \
+              '"Accept" => "application/json",' \
+              '"Travis-API-Version" => "3",' \
+              '"Authorization" => "token ${{secrets.TRAVIS_TOKEN}}"' \
+            ' }, { ' \
+              '"request" => { ' \
+                '"branch" => ENV["GITHUB_REF"].lchop("refs/heads/"), ' \
+                '"sha" => ENV["GITHUB_SHA"], ' \
+                '"config" => { ' \
+                 '"env" => ["GITHUB_RUN_ID=#{ENV["GITHUB_RUN_ID"]} GITHUB_REPOSITORY=#{ENV["GITHUB_REPOSITORY"]}"]' \
+                ' }' \
+              ' }' \
+            ' }.to_json).body'
