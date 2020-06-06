@@ -1,4 +1,5 @@
 require "../spec_helper"
+require "../../socket/spec_helper"
 require "openssl"
 require "http/client"
 require "http/server"
@@ -7,7 +8,7 @@ private def test_server(host, port, read_time = 0, content_type = "text/plain", 
   server = TCPServer.new(host, port)
   begin
     spawn do
-      io = server.accept
+      io = accept_with_timeout(server)
       sleep read_time
       if write_response
         response = HTTP::Client::Response.new(200, headers: HTTP::Headers{"Content-Type" => content_type}, body: "OK")

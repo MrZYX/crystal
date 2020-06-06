@@ -1,6 +1,7 @@
 require "spec"
 require "socket"
 require "../../spec_helper"
+require "../../socket/spec_helper"
 require "../../../support/ssl"
 
 describe OpenSSL::SSL::Server do
@@ -135,7 +136,7 @@ describe OpenSSL::SSL::Server do
         end
       end
 
-      client = server.accept
+      client = accept_with_timeout(server, socket_type: OpenSSL::SSL::Socket::Server)
       client.hostname.should eq("example.com")
       client.close
     end

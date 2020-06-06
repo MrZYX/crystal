@@ -20,18 +20,19 @@ describe UNIXSocket do
           client.local_address.family.should eq(Socket::Family::UNIX)
           client.local_address.path.should eq(path)
 
-          server.accept do |sock|
-            sock.local_address.family.should eq(Socket::Family::UNIX)
-            sock.local_address.path.should eq(path)
+          sock = accept_with_timeout(server, socket_type: UNIXSocket)
+          sock.local_address.family.should eq(Socket::Family::UNIX)
+          sock.local_address.path.should eq(path)
 
-            sock.remote_address.family.should eq(Socket::Family::UNIX)
-            sock.remote_address.path.should eq(path)
+          sock.remote_address.family.should eq(Socket::Family::UNIX)
+          sock.remote_address.path.should eq(path)
 
-            client << "ping"
-            sock.gets(4).should eq("ping")
-            sock << "pong"
-            client.gets(4).should eq("pong")
-          end
+          client << "ping"
+          sock.gets(4).should eq("ping")
+          sock << "pong"
+          client.gets(4).should eq("pong")
+
+          sock.close
         end
       end
     end
@@ -41,17 +42,17 @@ describe UNIXSocket do
     with_tempfile("unix_socket-accept.sock") do |path|
       UNIXServer.open(path) do |server|
         UNIXSocket.open(path) do |client|
-          server.accept do |sock|
-            sock.sync?.should eq(server.sync?)
-          end
+          sock = accept_with_timeout(server)
+          sock.sync?.should eq(server.sync?)
+          sock.close
         end
 
         server.sync = !server.sync?
 
         UNIXSocket.open(path) do |client|
-          server.accept do |sock|
-            sock.sync?.should eq(server.sync?)
-          end
+          sock = accept_with_timeout(server)
+          sock.sync?.should eq(server.sync?)
+          sock.close
         end
       end
     end

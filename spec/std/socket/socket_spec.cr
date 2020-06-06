@@ -28,7 +28,7 @@ describe Socket do
         client_done.send nil
       end
 
-      client = server.accept
+      client = accept_with_timeout(server)
       begin
         client.family.should eq(Socket::Family::INET)
         client.type.should eq(Socket::Type::STREAM)
