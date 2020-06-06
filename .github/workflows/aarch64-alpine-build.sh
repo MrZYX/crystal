@@ -26,7 +26,7 @@ cc crystal.o -o .build/crystal  -rdynamic src/llvm/ext/llvm_ext.o `/usr/bin/llvm
 
 #echo "::group::Rebuild Crystal"
 touch src/compiler/crystal.cr
-make
+make release=1
 #echo "::endgroup::"
 
 #echo "::group::Run stdlib specs"
