@@ -55,7 +55,7 @@ describe OpenSSL::SSL::Server do
 
   describe "#accept?" do
     it "accepts" do
-      tcp_server = TCPServer.new(0)
+      tcp_server = TCPServer.new("127.0.0.1", 0)
 
       server_context, client_context = ssl_context_pair
 
@@ -80,7 +80,7 @@ describe OpenSSL::SSL::Server do
 
   describe "#accept" do
     it "accepts and do handshake" do
-      tcp_server = TCPServer.new(0)
+      tcp_server = TCPServer.new("127.0.0.1", 0)
 
       server_context, client_context = ssl_context_pair
 
@@ -101,7 +101,7 @@ describe OpenSSL::SSL::Server do
     end
 
     it "doesn't to SSL handshake with start_immediately = false" do
-      tcp_server = TCPServer.new(0)
+      tcp_server = TCPServer.new("127.0.0.1", 0)
 
       server_context, client_context = ssl_context_pair
 
@@ -126,7 +126,7 @@ describe OpenSSL::SSL::Server do
   end
 
   it "detects SNI hostname" do
-    tcp_server = TCPServer.new(0)
+    tcp_server = TCPServer.new("127.0.0.1", 0)
     server_context, client_context = ssl_context_pair
 
     OpenSSL::SSL::Server.open tcp_server, server_context do |server|
