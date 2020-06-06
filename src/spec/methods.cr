@@ -76,6 +76,14 @@ module Spec::Methods
     raise Spec::AssertionFailed.new(msg, file, line)
   end
 
+  # Marks the current example pending
+  #
+  # In case some example needs to be  pending on some condition that require executing it,
+  # this allows to mark it as such  rather than letting it fail or never run.
+  def pending!(msg = "Cannot run example", file = __FILE__, line = __LINE__)
+    raise Spec::ExamplePending.new(msg, file, line)
+  end
+
   # Executes the given block before each spec in the current context runs.
   #
   # A context is defined by `describe` or `context` blocks, or outside of them
