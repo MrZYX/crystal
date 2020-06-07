@@ -1,0 +1,31 @@
+name: Prepare and trigger AArch64 build
+
+on: [push]
+
+jobs:
+  cross-compile-musl:
+    runs-on: ubuntu-latest
+    container: crystallang/crystal:0.34.0-build
+    steps:
+      - name: Download Crystal source
+        uses: actions/checkout@v2
+      - name: Build Crystal head for Global ISel patch (remove step after 0.35.0)
+        run: make
+      - name: Cross-compile Crystal
+        run: |
+          touch src/compiler/crystal.cr
+          make crystal FLAGS="--cross-compile --target aarch64-linux-musl"
+          mv .build/crystal.o crystal.o
+      - name: Upload Crystal object file
+        uses: actions/upload-artifact@v1
+        with:
+          name: crystal-object-aarch64-musl
+          path: crystal.o
+      - name: Trigger Build on drone.io
+        run: |
+          set -x
+          #  We got no curl here and installing it or restructing the workflow just for this seems exhausting, so....
+          crystal eval \
+            'require "http/client"; HTTP::Client.post("' \
+            "https://cloud.drone.io/api/repos/$GITHUB_REPOSITORY/builds?branch=${GITHUB_REF#refs/heads/}&commit=$GITHUB_SHA&GITHUB_REPOSITORY=$GITHUB_REPOSITORY&GITHUB_RUN_ID=$GITHUB_RUN_ID" \
+            '", HTTP::Headers { "Authorization" => "Bearer ${{secrets.DRONE_IO_TOKEN}}"})'
