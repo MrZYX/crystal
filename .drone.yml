@@ -4,7 +4,13 @@ name: AArch64 CI
 platform:
   arch: arm64
 steps:
-  - name: Build & test
+  - name: Download cross compiled compiler
+    image: plugins/download
+    settings:
+      source: https://cloud.aeshna.de/index.php/apps/sharingpath/mrzyx/Public/crystal-aarch64-musl/crystal.o.gz
+  - name: Build & Test
     image: alpine:3.12
     commands:
+      - apk add gzip
+      - gunzip crystal.o.gz
       - /bin/ash .github/workflows/aarch64-alpine-build.sh
