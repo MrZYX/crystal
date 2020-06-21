@@ -1,3 +1,4 @@
+{% skip_file if flag?(:arm) %} # TODO: port missing instructions from compiler-rt or enable linking compiler-rt
 require "spec"
 
 enum AtomicEnum
