@@ -7,7 +7,7 @@ lib LibC
   W_OK                =  2
   X_OK                =  1
   SC_CLK_TCK          =  2
-  SC_NPROCESSORS_ONLN = 58
+  SC_NPROCESSORS_ONLN = 84
 
   fun chroot(path : Char*) : Int
   fun access(name : Char*, type : Int) : Int
