@@ -83,7 +83,7 @@ describe UDPSocket do
                    udp.multicast_interface Socket::IPAddress.new(unspecified_address, 0)
                  rescue e : Socket::Error
                    if e.message =~ /Protocol not available/
-                     pending!("Multicast device selection not available on this host")
+                     puts("Multicast device selection not available on this host: #{e.os_error}")
                    else
                      raise e
                    end
@@ -99,7 +99,7 @@ describe UDPSocket do
                    udp.multicast_interface(0)
                  rescue e : Socket::Error
                    if e.message =~ /Protocol not available/
-                     pending!("Multicast device selection not available on this host")
+                     puts("Multicast device selection not available on this host: #{e.os_error}")
                    else
                      raise e
                    end

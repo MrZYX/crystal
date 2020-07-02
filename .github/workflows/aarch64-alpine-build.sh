@@ -26,13 +26,15 @@ cc crystal.o -o .build/crystal  -rdynamic src/llvm/ext/llvm_ext.o `/usr/bin/llvm
 
 #echo "::group::Rebuild Crystal"
 touch src/compiler/crystal.cr
-make release=1
+make
 #echo "::endgroup::"
 
+bin/crystal spec spec/std/socket/udp_socket_spec.cr 
+
 #echo "::group::Run stdlib specs"
-make std_spec verbose=1
+#make std_spec verbose=1
 #echo "::endgroup::"
 
 #echo "::group::Run compiler specs"
-make compiler_spec verbose=1
+#make compiler_spec verbose=1
 #echo "::endgroup::"
